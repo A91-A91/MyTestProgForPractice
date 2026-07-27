@@ -1,0 +1,6 @@
+@MyTestProgForPractice_HostAddress = http://localhost:5244
+
+GET {{MyTestProgForPractice_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
