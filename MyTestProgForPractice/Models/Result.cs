@@ -11,7 +11,7 @@ public partial class Result
 
     public double? TimeDelta { get; set; }
 
-    public TimeOnly? StartDate { get; set; }
+    public DateTimeOffset? StartDate { get; set; }
 
     public double? AverageExecTime { get; set; }
 

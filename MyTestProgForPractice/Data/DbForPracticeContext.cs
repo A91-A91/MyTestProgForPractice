@@ -39,7 +39,9 @@ public partial class DbForPracticeContext : DbContext
             entity.Property(e => e.MaxValue).HasColumnName("max_value");
             entity.Property(e => e.MedianValue).HasColumnName("median_value");
             entity.Property(e => e.MinValue).HasColumnName("min_value");
-            entity.Property(e => e.StartDate).HasColumnName("startDate");
+            entity.Property(e => e.StartDate)
+                .HasColumnType("time with time zone")
+                .HasColumnName("startDate");
             entity.Property(e => e.TimeDelta).HasColumnName("timeDelta");
         });
 
@@ -48,7 +50,7 @@ public partial class DbForPracticeContext : DbContext
             entity.HasKey(e => e.Id).HasName("Values_pkey");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
             entity.Property(e => e.Date).HasColumnName("date");
             entity.Property(e => e.ExecutionTime).HasColumnName("execution_time ");

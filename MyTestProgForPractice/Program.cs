@@ -5,6 +5,8 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using MyTestProgForPractice.Models;
+using MyTestProgForPractice.Services;
+using MyTestProgForPractice.Classes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,9 +44,8 @@ builder.Services.AddSwaggerGen(options =>
 
 
 
-///builder.Services.AddScoped<Operations_tasks>();
-
-//builder.Services.AddScoped<Operations_authorization>();
+builder.Services.AddScoped<Operations_DB>();
+builder.Services.AddScoped<CsvParser>();
 
 var app = builder.Build();
 app.UseAuthentication();
