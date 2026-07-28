@@ -18,20 +18,40 @@ namespace MyTestProgForPractice.Controllers
         [HttpPost("upload")]
         public async Task<IActionResult> Upload(IFormFile file)
         {
-            if (file == null)
-                return BadRequest("Файл не выбран.");
+            try
+            {
+                if (file == null)
+                    return BadRequest("Файл не выбран.");
 
-            await operation.UploadCsv(file);
+                await operation.UploadCsv(file);
 
-            return Ok("Файл успешно обработан.");
+                return Ok("Файл успешно обработан.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    error = ex.Message
+                });
+            }
         }
 
         [HttpPost("filter")]
         public async Task<IActionResult> FilterResults(ResultDTO filter)
         {
-            var results = await operation.GetResults(filter);
-
-            return Ok(results);
+            try
+            {
+                var results = await operation.GetResults(filter);
+                if (!results.Any()) { return NotFound("Нет подходящих под условия данных!"); }
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    error = ex.Message
+                });
+            }
         }
     }
 }

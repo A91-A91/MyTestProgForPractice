@@ -40,7 +40,6 @@ public partial class DbForPracticeContext : DbContext
             entity.Property(e => e.MedianValue).HasColumnName("median_value");
             entity.Property(e => e.MinValue).HasColumnName("min_value");
             entity.Property(e => e.StartDate)
-                .HasColumnType("time with time zone")
                 .HasColumnName("startDate");
             entity.Property(e => e.TimeDelta).HasColumnName("timeDelta");
         });
