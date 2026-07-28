@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyTestProgForPractice.Classes;
 using MyTestProgForPractice.Data;
+using MyTestProgForPractice.DTO;
 using MyTestProgForPractice.Models;
 using MyTestProgForPractice.Services;
 namespace MyTestProgForPractice.Services
@@ -40,11 +41,11 @@ namespace MyTestProgForPractice.Services
                 }
 
                 // Вычисляем статистику
-                var averageValue = values.Average(x => x.Value1!.Value);
+                var averageValue = values.Average(x => x.ValueData!.Value);
                 var averageExecTime = values.Average(x => x.ExecutionTime!.Value);
 
-                var minValue = values.Min(x => x.Value1!.Value);
-                var maxValue = values.Max(x => x.Value1!.Value);
+                var minValue = values.Min(x => x.ValueData!.Value);
+                var maxValue = values.Max(x => x.ValueData!.Value);
 
                 var startDate = values.Min(x => x.Date!.Value);
                 var endDate = values.Max(x => x.Date!.Value);
@@ -98,7 +99,7 @@ namespace MyTestProgForPractice.Services
         private double CalculateMedian(List<Value> values)
         {
             var sorted = values
-                .Select(v => v.Value1)
+                .Select(v => v.ValueData)
                 .OrderBy(v => v)
                 .ToList();
 
@@ -109,6 +110,55 @@ namespace MyTestProgForPractice.Services
                 return (double)(sorted[middle - 1] + sorted[middle]) / 2;
 
             return (double)sorted[middle];
+        }
+
+        public async Task<List<Result>> GetResults(ResultDTO filter)
+        {
+            var query = context.Results.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filter.FileName))
+            {
+                query = query.Where(r =>
+                    r.FileName!.Contains(filter.FileName));
+            }
+
+            if (filter.StartDateFrom.HasValue)
+            {
+                query = query.Where(r =>
+                    r.StartDate >= filter.StartDateFrom.Value);
+            }
+
+            if (filter.StartDateTo.HasValue)
+            {
+                query = query.Where(r =>
+                    r.StartDate <= filter.StartDateTo.Value);
+            }
+
+            if (filter.AverageValueFrom.HasValue)
+            {
+                query = query.Where(r =>
+                    r.AverageValue >= filter.AverageValueFrom.Value);
+            }
+
+            if (filter.AverageValueTo.HasValue)
+            {
+                query = query.Where(r =>
+                    r.AverageValue <= filter.AverageValueTo.Value);
+            }
+
+            if (filter.AverageExecutionTimeFrom.HasValue)
+            {
+                query = query.Where(r =>
+                    r.AverageExecTime >= filter.AverageExecutionTimeFrom.Value);
+            }
+
+            if (filter.AverageExecutionTimeTo.HasValue)
+            {
+                query = query.Where(r =>
+                    r.AverageExecTime <= filter.AverageExecutionTimeTo.Value);
+            }
+
+            return await query.ToListAsync();
         }
     }
 }

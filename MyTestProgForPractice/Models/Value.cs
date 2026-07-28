@@ -11,7 +11,7 @@ public partial class Value
 
     public double? ExecutionTime { get; set; }
 
-    public double? Value1 { get; set; }
+    public double? ValueData { get; set; }
 
     public int? ResultId { get; set; }
 

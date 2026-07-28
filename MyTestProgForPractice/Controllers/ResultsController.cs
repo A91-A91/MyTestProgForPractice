@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MyTestProgForPractice.DTO;
 using MyTestProgForPractice.Services;
 
 namespace MyTestProgForPractice.Controllers
@@ -7,11 +8,11 @@ namespace MyTestProgForPractice.Controllers
     [Route("api/results")]
     public class ResultsController : ControllerBase
     {
-        private readonly Operations_DB resultService;
+        private readonly Operations_DB operation;
 
-        public ResultsController(Operations_DB _resultService)
+        public ResultsController(Operations_DB _operation)
         {
-            resultService = _resultService;
+            operation = _operation;
         }
 
         [HttpPost("upload")]
@@ -20,9 +21,17 @@ namespace MyTestProgForPractice.Controllers
             if (file == null)
                 return BadRequest("Файл не выбран.");
 
-            await resultService.UploadCsv(file);
+            await operation.UploadCsv(file);
 
             return Ok("Файл успешно обработан.");
+        }
+
+        [HttpPost("filter")]
+        public async Task<IActionResult> FilterResults(ResultDTO filter)
+        {
+            var results = await operation.GetResults(filter);
+
+            return Ok(results);
         }
     }
 }

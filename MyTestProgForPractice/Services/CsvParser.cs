@@ -78,7 +78,7 @@ namespace MyTestProgForPractice.Classes
                 {
                     Date = date,
                     ExecutionTime = executionTime,
-                    Value1 = value
+                    ValueData = value
                 });
 
                 if (values.Count > 10000)

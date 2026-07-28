@@ -31,7 +31,7 @@ public partial class DbForPracticeContext : DbContext
             entity.HasKey(e => e.Id).HasName("Results_pkey");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("id");
             entity.Property(e => e.AverageExecTime).HasColumnName("average_exec_time");
             entity.Property(e => e.AverageValue).HasColumnName("average_value");
@@ -50,12 +50,12 @@ public partial class DbForPracticeContext : DbContext
             entity.HasKey(e => e.Id).HasName("Values_pkey");
 
             entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("id");
             entity.Property(e => e.Date).HasColumnName("date");
             entity.Property(e => e.ExecutionTime).HasColumnName("execution_time ");
             entity.Property(e => e.ResultId).HasColumnName("result_id ");
-            entity.Property(e => e.Value1).HasColumnName("value ");
+            entity.Property(e => e.ValueData).HasColumnName("valueData");
 
             entity.HasOne(d => d.Result).WithMany(p => p.Values)
                 .HasForeignKey(d => d.ResultId)
