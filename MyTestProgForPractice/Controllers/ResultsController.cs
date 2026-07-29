@@ -42,7 +42,8 @@ namespace MyTestProgForPractice.Controllers
             try
             {
                 var results = await operation.GetResults(filter);
-                if (!results.Any()) { return NotFound("Нет подходящих под условия данных!"); }
+                if (!results.Any()) {
+                    return NotFound("Нет подходящих под условия данных!"); }
                 return Ok(results);
             }
             catch (Exception ex)
@@ -53,5 +54,16 @@ namespace MyTestProgForPractice.Controllers
                 });
             }
         }
+        [HttpGet("lastValues")]
+        public async Task<IActionResult> GetLastValues(string fileName)
+        {
+            var values = await operation.GetLastValues(fileName);
+
+            if (!values.Any()){
+                return NotFound("Для данного файла значения не найдены!");}
+
+            return Ok(values);
+        }
+
     }
 }

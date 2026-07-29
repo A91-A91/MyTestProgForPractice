@@ -24,68 +24,15 @@ namespace MyTestProgForPractice.Services
 
             try
             {
-                // Парсим CSV
                 var values = await parser.ParseF(file);
 
-                // Если файл с таким именем уже есть
-                var existingResult = await context.Results
-                    .Include(r => r.Values)
-                    .FirstOrDefaultAsync(r => r.FileName == file.FileName);
+                await DeleteOldResult(file.FileName);
 
-                if (existingResult != null)
-                {
-                    context.Values.RemoveRange(existingResult.Values);
-                    context.Results.Remove(existingResult);
+                var result = CreateResult(file.FileName, values);
 
-                    await context.SaveChangesAsync();
-                }
+                await SaveResult(result);
 
-                // Вычисляем статистику
-                var averageValue = values.Average(x => x.ValueData!.Value);
-                var averageExecTime = values.Average(x => x.ExecutionTime!.Value);
-
-                var minValue = values.Min(x => x.ValueData!.Value);
-                var maxValue = values.Max(x => x.ValueData!.Value);
-
-                var startDate = values.Min(x => x.Date!.Value);
-                var endDate = values.Max(x => x.Date!.Value);
-
-                var timeDelta = (endDate - startDate).TotalSeconds;
-
-                var median = CalculateMedian(values);
-
-                // Создаем Result
-                var result = new Result
-                {
-                    FileName = file.FileName,
-                    AverageValue = averageValue,
-                    AverageExecTime = averageExecTime,
-                    MinValue = minValue,
-                    MaxValue = maxValue,
-                    MedianValue = median,
-                    StartDate = startDate,
-                    TimeDelta = timeDelta
-                };
-
-                context.Results.Add(result); // добавляем результат 
-
-                await context.SaveChangesAsync();
-
-                // Привязываем Values к Result
-                foreach (var value in values)
-                {
-                    value.ResultId = result.Id;
-                }
-                foreach (var v in values)
-                {
-                    Console.WriteLine($"Id = {v.Id}");
-                }
-
-                Console.WriteLine($"Количество объектов = {values.Count}");
-
-                context.Values.AddRange(values);
-
-                await context.SaveChangesAsync();
+                await SaveValues(values, result.Id);
 
                 await transaction.CommitAsync();
             }
@@ -96,32 +43,123 @@ namespace MyTestProgForPractice.Services
             }
         }
 
+        private async Task DeleteOldResult(string fileName)
+        {
+            var existingResult = await context.Results
+                .Include(r => r.Values)
+                .FirstOrDefaultAsync(r => r.FileName == fileName);
+
+            if (existingResult == null)
+                return;
+
+            context.Values.RemoveRange(existingResult.Values);
+            context.Results.Remove(existingResult);
+
+            await context.SaveChangesAsync();
+        }
+
+        private Result CreateResult(string fileName, List<Value> values)
+        {
+            var averageValue = CalculateAverageValue(values);
+            var averageExecTime = CalculateAverageExecutionTime(values);
+
+            var minValue = values.Min(x => x.ValueData!.Value);
+            var maxValue = values.Max(x => x.ValueData!.Value);
+
+            var startDate = values.Min(x => x.Date!.Value);
+            var endDate = values.Max(x => x.Date!.Value);
+
+            var timeDelta = (endDate - startDate).TotalSeconds;
+
+            var median = CalculateMedian(values);
+
+            return new Result
+            {
+                FileName = fileName,
+                AverageValue = averageValue,
+                AverageExecTime = averageExecTime,
+                MinValue = minValue,
+                MaxValue = maxValue,
+                MedianValue = median,
+                StartDate = startDate,
+                TimeDelta = timeDelta
+            };
+        }
+
+        private double CalculateAverageValue(List<Value> values)
+        {
+            return values.Average(x => x.ValueData!.Value);
+        }
+
+        private double CalculateAverageExecutionTime(List<Value> values)
+        {
+            return values.Average(x => x.ExecutionTime!.Value);
+        }
+
+        private async Task SaveResult(Result result)
+        {
+            context.Results.Add(result);
+
+            await context.SaveChangesAsync();
+        }
+
+        private async Task SaveValues(List<Value> values, int resultId)
+        {
+            foreach (var value in values)
+            {
+                value.ResultId = resultId;
+            }
+
+            context.Values.AddRange(values);
+
+            await context.SaveChangesAsync();
+        }
+
         private double CalculateMedian(List<Value> values)
         {
             var sorted = values
-                .Select(v => v.ValueData)
-                .OrderBy(v => v)
-                .ToList();
+            .Select(v => v.ValueData!.Value)
+            .OrderBy(v => v)
+            .ToList();
 
             int count = sorted.Count;
             int middle = count / 2;
 
             if (count % 2 == 0)
-                return (double)(sorted[middle - 1] + sorted[middle]) / 2;
+                return (sorted[middle - 1] + sorted[middle]) / 2;
 
-            return (double)sorted[middle];
+            return sorted[middle];
         }
 
         public async Task<List<Result>> GetResults(ResultDTO filter)
         {
             var query = context.Results.AsQueryable();
 
+            query = FilterByFileName(query, filter);
+            query = FilterByStartDate(query, filter);
+            query = FilterByAverageValue(query, filter);
+            query = FilterByAverageExecutionTime(query, filter);
+
+            return await query.ToListAsync();
+        }
+
+        private IQueryable<Result> FilterByFileName(
+        IQueryable<Result> query,
+        ResultDTO filter)
+        {
             if (!string.IsNullOrWhiteSpace(filter.FileName))
             {
                 query = query.Where(r =>
                     r.FileName!.Contains(filter.FileName));
             }
 
+            return query;
+        }
+
+        private IQueryable<Result> FilterByStartDate(
+        IQueryable<Result> query,
+        ResultDTO filter)
+        {
             if (filter.StartDateFrom.HasValue)
             {
                 query = query.Where(r =>
@@ -134,6 +172,12 @@ namespace MyTestProgForPractice.Services
                     r.StartDate <= filter.StartDateTo.Value);
             }
 
+            return query;
+        }
+        private IQueryable<Result> FilterByAverageValue(
+        IQueryable<Result> query,
+        ResultDTO filter)
+        {
             if (filter.AverageValueFrom.HasValue)
             {
                 query = query.Where(r =>
@@ -146,6 +190,12 @@ namespace MyTestProgForPractice.Services
                     r.AverageValue <= filter.AverageValueTo.Value);
             }
 
+            return query;
+        }
+        private IQueryable<Result> FilterByAverageExecutionTime(
+          IQueryable<Result> query,
+          ResultDTO filter)
+         {
             if (filter.AverageExecutionTimeFrom.HasValue)
             {
                 query = query.Where(r =>
@@ -158,7 +208,21 @@ namespace MyTestProgForPractice.Services
                     r.AverageExecTime <= filter.AverageExecutionTimeTo.Value);
             }
 
-            return await query.ToListAsync();
+            return query;
+        }
+
+
+        public async Task<List<Value>> GetLastValues(string fileName)
+        {
+            var values = await context.Values
+             .Where(v => v.Result != null && v.Result.FileName == fileName)
+             .OrderByDescending(v => v.Date)
+             .Take(10)
+             .ToListAsync();
+
+            return values
+                .OrderBy(v => v.Date)
+                .ToList();
         }
     }
 }
