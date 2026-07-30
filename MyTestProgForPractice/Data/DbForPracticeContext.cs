@@ -52,8 +52,8 @@ public partial class DbForPracticeContext : DbContext
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
             entity.Property(e => e.Date).HasColumnName("date");
-            entity.Property(e => e.ExecutionTime).HasColumnName("execution_time ");
-            entity.Property(e => e.ResultId).HasColumnName("result_id ");
+            entity.Property(e => e.Execution_time).HasColumnName("execution_time");
+            entity.Property(e => e.ResultId).HasColumnName("result_id");
             entity.Property(e => e.ValueData).HasColumnName("valueData");
 
             entity.HasOne(d => d.Result).WithMany(p => p.Values)

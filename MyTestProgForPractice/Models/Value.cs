@@ -9,7 +9,7 @@ public partial class Value
 
     public DateTime? Date { get; set; }
 
-    public double? ExecutionTime { get; set; }
+    public double? Execution_time { get; set; }
 
     public double? ValueData { get; set; }
 

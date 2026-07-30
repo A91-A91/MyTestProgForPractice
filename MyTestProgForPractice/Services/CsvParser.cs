@@ -77,7 +77,7 @@ namespace MyTestProgForPractice.Classes
                 values.Add(new Value
                 {
                     Date = date,
-                    ExecutionTime = executionTime,
+                    Execution_time = executionTime,
                     ValueData = value
                 });
 

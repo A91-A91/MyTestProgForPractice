@@ -28,7 +28,7 @@ namespace MyTestProgForPractice.Services
 
                 await DeleteOldResult(file.FileName);
 
-                var result = CreateResult(file.FileName, values);
+                var result = CreateResult(file.FileName, values );
 
                 await SaveResult(result);
 
@@ -93,7 +93,7 @@ namespace MyTestProgForPractice.Services
 
         private double CalculateAverageExecutionTime(List<Value> values)
         {
-            return values.Average(x => x.ExecutionTime!.Value);
+            return values.Average(x => x.Execution_time!.Value);
         }
 
         private async Task SaveResult(Result result)
@@ -149,6 +149,7 @@ namespace MyTestProgForPractice.Services
         {
             if (!string.IsNullOrWhiteSpace(filter.FileName))
             {
+                filter.FileName += ".csv";
                 query = query.Where(r =>
                     r.FileName!.Contains(filter.FileName));
             }
@@ -214,6 +215,7 @@ namespace MyTestProgForPractice.Services
 
         public async Task<List<Value>> GetLastValues(string fileName)
         {
+            fileName += ".csv";
             var values = await context.Values
              .Where(v => v.Result != null && v.Result.FileName == fileName)
              .OrderByDescending(v => v.Date)
