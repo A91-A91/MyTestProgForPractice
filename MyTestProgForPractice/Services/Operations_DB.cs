@@ -5,6 +5,7 @@ using MyTestProgForPractice.Data;
 using MyTestProgForPractice.DTO;
 using MyTestProgForPractice.Models;
 using MyTestProgForPractice.Services;
+
 namespace MyTestProgForPractice.Services
 {
     public class Operations_DB
@@ -12,12 +13,15 @@ namespace MyTestProgForPractice.Services
         private readonly DbForPracticeContext context;
         private readonly CsvParser parser;
 
-
         public Operations_DB(DbForPracticeContext context, CsvParser parser)
         {
             this.context = context;
             this.parser = parser;
         }
+
+        /// <summary>
+        /// Загружает CSV-файл, обрабатывает его данные и сохраняет результаты в базу данных.
+        /// </summary>
         public async Task UploadCsv(IFormFile file)
         {
             await using var transaction = await context.Database.BeginTransactionAsync();
@@ -28,7 +32,7 @@ namespace MyTestProgForPractice.Services
 
                 await DeleteOldResult(file.FileName);
 
-                var result = CreateResult(file.FileName, values );
+                var result = CreateResult(file.FileName, values);
 
                 await SaveResult(result);
 
@@ -118,9 +122,9 @@ namespace MyTestProgForPractice.Services
         private double CalculateMedian(List<Value> values)
         {
             var sorted = values
-            .Select(v => v.ValueData!.Value)
-            .OrderBy(v => v)
-            .ToList();
+                .Select(v => v.ValueData!.Value)
+                .OrderBy(v => v)
+                .ToList();
 
             int count = sorted.Count;
             int middle = count / 2;
@@ -131,6 +135,9 @@ namespace MyTestProgForPractice.Services
             return sorted[middle];
         }
 
+        /// <summary>
+        /// Возвращает записи из таблицы Results, подходящие под заданные фильтры.
+        /// </summary>
         public async Task<List<Result>> GetResults(ResultDTO filter)
         {
             var query = context.Results.AsQueryable();
@@ -144,12 +151,13 @@ namespace MyTestProgForPractice.Services
         }
 
         private IQueryable<Result> FilterByFileName(
-        IQueryable<Result> query,
-        ResultDTO filter)
+            IQueryable<Result> query,
+            ResultDTO filter)
         {
             if (!string.IsNullOrWhiteSpace(filter.FileName))
             {
                 filter.FileName += ".csv";
+
                 query = query.Where(r =>
                     r.FileName!.Contains(filter.FileName));
             }
@@ -158,8 +166,8 @@ namespace MyTestProgForPractice.Services
         }
 
         private IQueryable<Result> FilterByStartDate(
-        IQueryable<Result> query,
-        ResultDTO filter)
+            IQueryable<Result> query,
+            ResultDTO filter)
         {
             if (filter.StartDateFrom.HasValue)
             {
@@ -175,9 +183,10 @@ namespace MyTestProgForPractice.Services
 
             return query;
         }
+
         private IQueryable<Result> FilterByAverageValue(
-        IQueryable<Result> query,
-        ResultDTO filter)
+            IQueryable<Result> query,
+            ResultDTO filter)
         {
             if (filter.AverageValueFrom.HasValue)
             {
@@ -193,10 +202,11 @@ namespace MyTestProgForPractice.Services
 
             return query;
         }
+
         private IQueryable<Result> FilterByAverageExecutionTime(
-          IQueryable<Result> query,
-          ResultDTO filter)
-         {
+            IQueryable<Result> query,
+            ResultDTO filter)
+        {
             if (filter.AverageExecutionTimeFrom.HasValue)
             {
                 query = query.Where(r =>
@@ -212,15 +222,18 @@ namespace MyTestProgForPractice.Services
             return query;
         }
 
-
+        /// <summary>
+        /// Возвращает последние 10 значений указанного файла, отсортированных по дате запуска.
+        /// </summary>
         public async Task<List<Value>> GetLastValues(string fileName)
         {
             fileName += ".csv";
+
             var values = await context.Values
-             .Where(v => v.Result != null && v.Result.FileName == fileName)
-             .OrderByDescending(v => v.Date)
-             .Take(10)
-             .ToListAsync();
+                .Where(v => v.Result != null && v.Result.FileName == fileName)
+                .OrderByDescending(v => v.Date)
+                .Take(10)
+                .ToListAsync();
 
             return values
                 .OrderBy(v => v.Date)

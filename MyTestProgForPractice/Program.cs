@@ -19,30 +19,10 @@ var dataSource = dataSourceBuilder.Build();
 builder.Services.AddDbContext<DbForPracticeContext>(options =>
     options.UseNpgsql(dataSource));
 
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen(options =>
-{
-
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
-
-
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<Operations_DB>();
 builder.Services.AddScoped<CsvParser>();

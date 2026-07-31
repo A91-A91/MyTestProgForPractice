@@ -57,12 +57,24 @@ namespace MyTestProgForPractice.Controllers
         [HttpGet("lastValues")]
         public async Task<IActionResult> GetLastValues(string fileName)
         {
-            var values = await operation.GetLastValues(fileName);
+            try
+            {
+                var values = await operation.GetLastValues(fileName);
 
-            if (!values.Any()){
-                return NotFound("Для данного файла значения не найдены!");}
+                if (!values.Any())
+                {
+                    return NotFound("Для данного файла значения не найдены!");
+                }
 
-            return Ok(values);
+                return Ok(values);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    error = ex.Message
+                });
+            }
         }
 
     }

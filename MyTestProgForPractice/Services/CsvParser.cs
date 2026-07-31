@@ -5,6 +5,12 @@ namespace MyTestProgForPractice.Classes
 {
     public class CsvParser
     {
+        /// <summary>
+        /// Метод для парсинга файла
+        /// </summary>
+        /// <param name="file">Имя файла</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public async Task<List<Value>> ParseF(IFormFile file)
         {
             if (file == null || file.Length == 0)
